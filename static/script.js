@@ -23,7 +23,7 @@ function handleScrape(event) {
             document.querySelector('.loading').style.display = 'none';
             if (data.status === 'success') {
                 total_stars = data.total_stars;
-                per_page = data.per_page;
+                per_page = Math.round(total_stars/data.per_page);
                 console.log(total_stars, per_page)
                 document.getElementById('scrapingStatus').innerText = `Scanning through ${per_page} pages, uncovering ${total_stars} repositories along the way.`
                 scrapeRepositories(username);
