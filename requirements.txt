@@ -2,3 +2,4 @@ Flask==2.3.2
 requests==2.31.0
 beautifulsoup4==4.9.3
 urllib3==1.26.7
+flask-cors
