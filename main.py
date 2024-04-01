@@ -88,8 +88,8 @@ def scrape():
     else:
         return jsonify({'status': 'error', 'message': 'Invalid username'})
 
-@app.route('/get_scrape_info', methods=['POST'])
-def get_scrape_info():
+@app.route('/info', methods=['POST'])
+def info():
     username = request.json.get('username')
     if username:
         base_url = f"https://github.com/{username}?tab=stars"

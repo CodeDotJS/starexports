@@ -11,7 +11,7 @@ function handleScrape(event) {
     document.getElementById('scrapingStatus').innerText = 'Initializing';
     document.querySelector('.loading').style.display = 'block';
 
-    fetch('/get_scrape_info', {
+    fetch('/info', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -76,7 +76,6 @@ function updateProgressBar() {
     }
 }
 
-
 document.getElementById('downloadJsonBtn').addEventListener('click', function() {
     const data = JSON.stringify(starred_repos, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
@@ -89,7 +88,6 @@ document.getElementById('downloadJsonBtn').addEventListener('click', function() 
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 });
-
 
 document.getElementById('downloadCsvBtn').addEventListener('click', function() {
     if (!Array.isArray(starred_repos)) {
