@@ -25,14 +25,12 @@ def bookmark(username):
     base_url = f"https://github.com/{username}?tab=stars"
     starred_repos = []
 
-    # Create a session object
     session = requests.Session()
     session.headers.update(headers)
 
     response = session.get(base_url)
 
     if response.status_code == 200:
-        # Use lxml for faster parsing
         soup = BeautifulSoup(response.text, 'lxml')
 
         while True:
