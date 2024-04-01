@@ -25,10 +25,15 @@ def bookmark(username):
     base_url = f"https://github.com/{username}?tab=stars"
     starred_repos = []
 
-    response = requests.get(base_url, headers=headers)
+    # Create a session object
+    session = requests.Session()
+    session.headers.update(headers)
+
+    response = session.get(base_url)
 
     if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
+        # Use lxml for faster parsing
+        soup = BeautifulSoup(response.text, 'lxml')
 
         while True:
             for repo in soup.find_all('div', class_='d-inline-block mb-1'):
@@ -58,8 +63,8 @@ def bookmark(username):
                 break
 
             next_url = urljoin("https://github.com/", next_button['href'])
-            response = requests.get(next_url, headers=headers)
-            soup = BeautifulSoup(response.text, 'html.parser')
+            response = session.get(next_url)
+            soup = BeautifulSoup(response.text, 'lxml')
 
         return starred_repos
     else:
@@ -92,7 +97,7 @@ def get_scrape_info():
         base_url = f"https://github.com/{username}?tab=stars"
         response = requests.get(base_url, headers=headers)
         if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
+            soup = BeautifulSoup(response.text, 'lxml')
 
             counter_elements = soup.find_all('span', class_='Counter')
 
