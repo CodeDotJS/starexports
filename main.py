@@ -1,7 +1,10 @@
-from flask import Flask, request, jsonify, render_template
-import requests
+from flask import Flask, request, jsonify, render_template, Response
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+import time
+import json
+import requests
+
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -23,8 +26,6 @@ headers = {
 
 def bookmark(username):
     base_url = f"https://github.com/{username}?tab=stars"
-    starred_repos = []
-
     session = requests.Session()
     session.headers.update(headers)
 
@@ -32,7 +33,7 @@ def bookmark(username):
 
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'lxml')
-
+        page = 1
         while True:
             for repo in soup.find_all('div', class_='d-inline-block mb-1'):
                 repo_name_with_username = repo.find('a').text.strip()
@@ -54,7 +55,10 @@ def bookmark(username):
                     'url': full_url
                 }
 
-                starred_repos.append(starred_repo)
+                yield {
+                    'page': page,
+                    'data': starred_repo
+                }
 
             next_button = soup.find('a', class_='btn BtnGroup-item', text='Next')
             if not next_button:
@@ -63,10 +67,7 @@ def bookmark(username):
             next_url = urljoin("https://github.com/", next_button['href'])
             response = session.get(next_url)
             soup = BeautifulSoup(response.text, 'lxml')
-
-        return starred_repos
-    else:
-        return []
+            page += 1
 
 @app.route('/', methods=['GET'])
 def index():
@@ -76,15 +77,10 @@ def index():
 def scrape():
     username = request.json.get('username')
     if username:
-        starred_repos = bookmark(username)
-        if starred_repos:
-            return jsonify({
-                'status': 'success',
-                'message': 'Scraping completed',
-                'data': starred_repos
-            })
-        else:
-            return jsonify({'status': 'error', 'message': 'No repositories found for the given username'})
+        def generate():
+            for result in bookmark(username):
+                yield json.dumps(result) + "\n"
+        return Response(generate(), mimetype='application/json')
     else:
         return jsonify({'status': 'error', 'message': 'Invalid username'})
 
