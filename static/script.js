@@ -1,13 +1,15 @@
-let starred_repos;
+let starred_repos = [];
 let total_stars;
 let per_page;
 
 function handleScrape(event) {
     event.preventDefault();
+
+    const username = document.getElementById('username').value;
+
     document.getElementById('downloadJsonBtn').style.display = 'none';
     document.getElementById('downloadCsvBtn').style.display = 'none';
     document.getElementById('progressBar').style.display = 'none';
-    const username = document.getElementById('username').value;
     document.getElementById('scrapingStatus').innerText = 'Initializing';
     document.querySelector('.loading').style.display = 'block';
 
@@ -23,10 +25,13 @@ function handleScrape(event) {
             document.querySelector('.loading').style.display = 'none';
             if (data.status === 'success') {
                 total_stars = data.total_stars;
-                per_page = Math.round(total_stars/data.per_page);
-                console.log(total_stars, per_page)
-                document.getElementById('scrapingStatus').innerText = `Scanning through ${per_page} pages, uncovering ${total_stars} repositories along the way.`
-                scrapeRepositories(username);
+                per_page = data.per_page;
+                if (total_stars > 0) {
+                    document.getElementById('scrapingStatus').innerText = `Scanning through ${Math.ceil(total_stars/per_page)} pages, uncovering ${total_stars} repositories along the way.`;
+                    scrapeRepositories(username);
+                } else {
+                    document.getElementById('scrapingStatus').innerText = 'This user has no starred repositories.';
+                }
             } else {
                 document.getElementById('scrapingStatus').innerText = data.message;
             }
@@ -34,10 +39,13 @@ function handleScrape(event) {
         .catch(error => {
             document.querySelector('.loading').style.display = 'none';
             console.error('Error:', error);
+            document.getElementById('scrapingStatus').innerText = 'An error occurred during the request.';
         });
 }
 
 function scrapeRepositories(username) {
+    starred_repos = [];
+
     document.querySelector('.loading').style.display = 'block';
 
     fetch('/scrape', {
@@ -47,33 +55,51 @@ function scrapeRepositories(username) {
             },
             body: JSON.stringify({ username: username })
         })
-        .then(response => response.json())
-        .then(data => {
-            document.querySelector('.loading').style.display = 'none';
-            console.log(data);
-            starred_repos = data.data || [];
-            document.getElementById('scrapingStatus').innerText = data.message;
-            if (data.status === 'success') {
-                document.getElementById('downloadJsonBtn').style.display = 'block';
-                document.getElementById('downloadCsvBtn').style.display = 'block';
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-            updateProgressBar();
+            return response.body;
+        })
+        .then(stream => {
+            const reader = stream.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let result = '';
+
+            reader.read().then(function processStream({ done, value }) {
+                if (done) {
+                    document.querySelector('.loading').style.display = 'none';
+                    document.getElementById('scrapingStatus').innerText = 'SUCCESS!';
+                    document.getElementById('downloadJsonBtn').style.display = 'block';
+                    document.getElementById('downloadCsvBtn').style.display = 'block';
+                    return;
+                }
+
+                result += decoder.decode(value);
+                const lines = result.split('\n');
+                lines.slice(0, -1).forEach(line => {
+                    const data = JSON.parse(line);
+                    console.log(data);
+                    starred_repos.push(data.data);
+                });
+                result = lines.pop();
+                updateProgressBar();
+                return reader.read().then(processStream);
+
+            });
         })
         .catch(error => {
             document.querySelector('.loading').style.display = 'none';
             console.error('Error:', error);
+            document.getElementById('scrapingStatus').innerText = 'Error occurred during scraping';
         });
 }
 
 function updateProgressBar() {
-    if (total_stars > 0 && per_page > 0) {
-        const progress = Math.floor((total_stars / per_page) * 100);
-        document.getElementById('progressBar').style.width = `100%`;
-        document.getElementById('progressBar').style.display = 'block';
-        document.getElementById('progressBar').innerText = `100%`;
-        const totalPages = Math.ceil(total_stars / per_page);
-        const currentPage = Math.ceil(progress / 100 * totalPages);
-    }
+    const progress = Math.floor((starred_repos.length / total_stars) * 100);
+    document.getElementById('progressBar').style.width = `${progress}%`;
+    document.getElementById('progressBar').style.display = 'block';
+    document.getElementById('progressBar').innerText = `${progress}%`;
 }
 
 document.getElementById('downloadJsonBtn').addEventListener('click', function() {
