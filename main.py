@@ -108,7 +108,7 @@ def info():
                 'per_page': per_page
             })
         else:
-            return jsonify({'status': 'error', 'message': 'Failed to fetch user page'})
+            return jsonify({'status': 'error', 'message': f'{username.upper()} is not a GitHub user!'})
     else:
         return jsonify({'status': 'error', 'message': 'Invalid username'})
 
