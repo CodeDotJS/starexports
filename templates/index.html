@@ -64,6 +64,11 @@
     </div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script>
+    window.va = window.va || function() {
+        (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script>
     document.addEventListener('DOMContentLoaded', function() {
         const themeToggle = document.getElementById('themeToggle');
         const body = document.body;
