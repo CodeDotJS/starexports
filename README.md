@@ -8,6 +8,13 @@ A web application that allows users to export their (or anyone else's) starred r
 
 A live demo of the application is available __[here](https://starexports.onrender.com/)__. To get started with, simply enter your GitHub username (or any other user's) and hit enter. Once the data is fetched, you can download it as a JSON or CSV file.
 
+__NOTE__
+
+After building and testing *StarExports* locally, I deployed it on Vercel, but I kept getting a `504` [error](https://vercel.com/guides/what-can-i-do-about-vercel-serverless-functions-timing-out) for users who have over ~800 starred repositories. I thought if I streamed the data, I wouldn't run into this issue, but then found out that the Python runtime does [not support](https://github.com/orgs/vercel/discussions/2756#discussioncomment-6104176) streaming responses on Vercel. Out of laziness, I deployed it on Render, where it works fine except for the instance spinning down due to inactivity.
+
+- __[Check on Vercel](https://starexports.vercel.app)__ - *Fast, but breaks when it has to pull a good chunk of repositories.*
+- __[Check on Render](https://starexports.onrender.com)__ - *Completely functional but can take some time to load.*
+
 # Installation
 
 - Clone and navigate:
