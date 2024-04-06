@@ -6,7 +6,7 @@
 
 A web application that allows users to export their (or anyone else's) starred repositories from GitHub in JSON or CSV format. I initially built this tool to create a backup of my starred repositories so that I could unstar repositories without worrying about losing something important.
 
-A live demo of the application is available __[here](https://starexports.vercel.app)__. To get started with, simply enter your GitHub username (or any other user's) and hit enter. Once the data is fetched, you can download it as a JSON or CSV file.
+A live demo of the application is available __[here](https://starexports.onrender.com/)__. To get started with, simply enter your GitHub username (or any other user's) and hit enter. Once the data is fetched, you can download it as a JSON or CSV file.
 
 # Installation
 
